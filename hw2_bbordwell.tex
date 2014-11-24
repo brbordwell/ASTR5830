@@ -1,0 +1,428 @@
+%
+%     hw2_bbordwell.tex
+%     Baylee Bordwell (baylee.bordwell@colorado.edu)
+%     Based on the template by Benjamin Brown (bpbrown@colorado.edu)
+%     Aug 27, 2014
+%
+%     Problem set 2 for ASTR/ATOC 5830, Topics in Planetary Science, taught at
+%     University of Colorado, Boulder, Fall 2014.
+%
+%
+
+\documentclass[10pt, preprint]{aastex}
+% formatting based on 2014 NASA ATP proposal with Jeff Oishi
+
+%%%%%%begin preamble
+\usepackage[hmargin=1in, vmargin=1in]{geometry} % Margins
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{times}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{pdfpages}
+\usepackage{import}
+% for code import
+\usepackage{listings}
+\usepackage{color}
+\usepackage{ragged2e}
+\usepackage[section,subsection]{extraplaceins}
+\hypersetup{
+     colorlinks   = true,
+     citecolor     = gray,
+     urlcolor       = blue
+}
+
+%% headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{ASTR/ATOC 5830}
+\chead{}
+\rhead{name: Baylee Bordwell}
+\lfoot{Assignment 2}
+\cfoot{\thepage}
+\rfoot{Fall 2014}
+% no hline under header
+\renewcommand{\headrulewidth}{0pt}
+
+\newcommand{\sol}{\ensuremath{\odot}}
+
+% make lists compact
+\usepackage{enumitem}
+%\setlist{nosep}
+
+%%%%%%end preamble
+
+
+\begin{document}
+\section*{Methods}
+\subsection{Initial Value Estimation}
+For each set of data, a transit was fit using the package \verb|ktransit|. Prior to fitting, the data was normalized to the median of the flux values, and the error values appropriately scaled. For each system, a stellar density was estimated based on the given stellar mass, and the appropriate stellar mass-radius relationship, as, 
+\begin{equation}
+  \rho_* = \rho_\sol\frac{M_*/M_\sol}{(R_*/R_\sol)^3}
+\end{equation}
+Specifically, the empirical mass-radius relationship of Demircan and Kahraman 1990 was used, which for stars below $1.66M_\sol$ is,
+\begin{equation}
+R = 1.06 M^{0.945}
+\end{equation}
+The estimated value for the radius of the low mass star in problem 2 was compared to the models of Demory et al. (2009) and the data in S\'egransan et al.(2003) to ensure that this relationship held reasonably for 0.15$M_\sol$ stars. This relationship predicts what seems like an incredibly high density for the star, but upon review of the literature that incredulity can almost certainly be blamed on my own na\"ivety. 
+
+For each fit, a transit mid-time was estimated based on finding the timing of the first point on the lightcurve a standard deviation below the continuum for a median-boxcar-smoothed version of the transit. The ratio $R_p/R_*$ was estimated as the square root of the range of the transit data. The initial guess for the input parameter was set to be near zero, but slightly larger because the fitter seemed to prefer a non-zero number. These initial value estimates for the parameters of the fit for each data set are summarized in Table \ref{guesses}. For the second problem, I chose to fit a transit using \verb|ktransit| mostly out of curiousity, and I estimated the quadratic limb darkening parameters based on estimates of the relationship between spectral type and temperature from Rajpurohit et al. (2013) and the limb darkening parameters defined by Sing (2010).
+
+\begin{table}[!ht]
+  \centering
+  \footnotesize
+  \begin{tabular}{cccccccccc}
+    {\bf Problem} & {\bf $\mathbf{M_*/M_\sol}$} & {\bf $\mathbf{R_*/R_\sol}$}(a,b,c) & 
+    {\bf $\mathbf{\rho_*}$ [g/cm$^3$]} & {\bf Mid-time, T0} & {\bf $\mathbf{R_p/R_*}$} & 
+    {\bf Period, P} & {\bf Impact, b} & {\bf ld1}(d) & {\bf ld2} (d)\\ \hline
+    1.1 & 0.9 & 0.960 & 1.426 & 4.863 & 0.193 & 3.673 & 0.001 &-&- \\
+    1.2 & 0.9 & 0.960 & 1.426 & 12.212 & 0.197 & 3.673 & 0.001 &-&-\\
+    1.3 & 0.9 & 0.960 & 1.426 & 23.231 & 0.175 & 3.673 & 0.001 &-&-\\
+    1 (fold) & 0.9 & 0.960 & 1.426 & 0.0535 & 0.168 & 3.673 & 0.001 &-&-\\
+    2&  0.1 & 0.176 & 38.202 & 0.658 & 0.0747 & 12.164 & 0.001 & 0.525 & 0.112\\
+    2 (alternate) &  0.1 & 0.202 & 25.640 & 0.658 & 0.0747 & 12.164 & 0.001 & 0.525 & 0.112
+\\
+  \end{tabular}
+  \caption{Initial guesses of parameter values provided to \protect \verb|ktransit| \\
+    References: (a) Demircan and Kahraman (1990), (b) Demory et al. (2009), (c) S\'egranson et al. (2003), (d) Sing, D.K. (2010) \label{guesses}}
+\end{table}
+
+Initially, I began each fit with a guess for the period of 3.5 days and by only varying the stellar density, transit mid-time and $R_p/R_*$, and for the first problem I used these fitted mid-time points, together with Equation 32 from chapter five of the Exoplanets textbook, 
+\begin{equation}
+t_c[n] = t_c[0]+nP
+\end{equation}
+to find a better initial guess for the period of $3.673$ days (where $t_c[n]$ is the mid-time of the $n$th transit, and $P$ is the period).
+\vspace{-20pt}
+\subsection{Fitting and error estimation}
+For every data set, the data was fitted by first deriving the initial value estimates as described in the section above, and then by performing a fit with $P$ and $b$ held constant. Where values fitted in Problem 1 were given in Problem 2, the values were held fixed. All given parameters were assigned an uncertainty of 0 in absence of being provided with any uncertainties. The residuals of this fit were then fit using a linear polynomial, and the fit removed from the data prior to further fitting. Based on experience of bad behavior of the fitter when $P$ was allowed to vary (even with a good guess), further fits only changed from the first in allowing $b$ to vary. The next fit after detrending the data was used to produce a population of residuals utilized for estimating the 1-$\sigma$ errors on the fitted parameters via the residual permutation method. Permutations were run until the mean of each fitted parameter began to converge to  within 1\%. As $P$ was held fixed, the uncertainty in $P$ was estimated by propagating the uncertainty in $T_c$.
+
+For the fitting of the phase-folded lightcurve of the first problem, the lightcurve was generated by aligning each detrended transit by its mid-time, and averaging the three curves, weighting by the inverse of each point's uncertainty. The time axis was then set to run arbitrarily from 0 in the same timestep as the data used to compose the lightcurve. A similar phase-folded lightcurve was generated for the second problem's data by first fitting for the mid-time and cutting it into separate transits based on taking a period around the mid-time. Both  of these phase-folded lightcurves were treated exactly as the raw transits were after being created.
+
+Additionally, for the data in the second problem, the provided models were compared with the data via the $\chi^2$ statistic,
+\begin{equation} 
+\begin{array}{cc}
+\chi^2 = \sum_{i=1}^N\left[\frac{f_i(\text{obs})-f_i(\text{calc})}{\sigma_i}\right]^2 &
+\sigma_{\chi^2} = 2\sum_{i=1}^N\left[\frac{f_i(\text{obs})-f_i(\text{calc})}{\sigma_i}\right]\\
+\end{array}
+\end{equation}
+The best fit of $R_p/R_*$ was found by performing a weighted average of the different model values with the inverse of their $\chi^2$, as all of the values were so close together that identifying the minimum did not seem adequate,
+\begin{equation}
+\begin{array}{ll}
+\overline{\frac{R_p}{R_*}} = \frac{\sum_{i=1}^{N_\text{model}}\left(\frac{R_p}{R_*}\right)_i\frac{1}{\chi_i^2}}{\sum_{i=1}^{N_\text{model}}\frac{1}{\chi_i^2}} &
+
+\sigma_{\overline{\frac{R_p}{R_*}}} = \overline{\frac{R_p}{R_*}}\sqrt{
+\frac{\sigma_{\chi^2}^2}{\chi^2}+\frac{\sigma_{R_p/R_*}^2}{(R_p/R_*)^2}
++\frac{\sum_{i=0}^{N_\text{model}} \frac{\sigma_{\chi^2_i}^2}{(\chi^2_i)^4}}
+{\left(\sum_{i=0}^{N_\text{model}}\frac{1}{\chi^2_i}\right)^2}}\\
+\end{array}
+\end{equation}
+\vspace{-20pt}
+\subsection{Derivation of other physical properties of the system}
+Using the fitted parameters $b$, $\tau$, $T$, $T_c$, $R_p/R_*$, $P$ and $\rho_*$, together with the given parameters $M_*$, $K_*$, $e$ and $w$, it was possible to estimate an extensive set of physical properties for the star and planet. The relationships used to derive these values, and their propagated uncertainties are detailed in Table \ref{death}. The uncertainties for $\tau$, $T$, $T_c$ and $\delta$ were taken from Equations 43-46 in Chapter 5 of the text, and found to be reasonable (and usually somewhat higher) than the estimated error. In the equations given below, the terms involving $e$ and $w$ are left off for clarity, given that they make no contribution to any of the derived values. The assumption is also made that the stellar mass far exceeds the mass of the planet in question.
+\begin{table}[!ht]
+  \begin{tabular}{ll}
+    {\bf Derived value} & { \bf Uncertainty} \\\hline  
+    $\delta = \left(\frac{R_p}{R_*}\right)^2 $ & 
+    $\sigma_\delta = 2\frac{R_p}{R_*}\sigma_{R_p/R_*} $ \\   
+    $\tau_i = \tau_e = \tau = \text{  [measured]} $ &
+    $\sigma_\tau = \frac{\sigma_{R_p/R_*}T}{\delta}\sqrt{\frac{6\tau}{T}} $ \\  
+    $T = \text{  [measured]} $ &
+    $\sigma_T = \frac{\sigma_{R_p/R_*}T}{\delta}\sqrt{\frac{2\tau}{T}} $ \\ 
+    $T_c = \text{  [fitted]} $ &
+    $\sigma_{T_c} = \frac{\sigma_{R_p/R_*}T}{\delta}\sqrt{\frac{\tau}{2T}} $ \\   
+    $i = \tan^{-1}(x) $ & 
+    $\sigma_i = \frac{x}{1+x^2}\sqrt{\frac{\sigma_{R_p/R_*}^2+\sigma_b^2}{((1-\frac{R_p}{R_*})^2-b^2)^2}+\left(\frac{\sigma_b^2}{b^2}+\cot^2(\pi T/P)(\frac{\sigma_T^2}{T^2}+\frac{\sigma_P^2}{P^2})\right)} $ \\ 
+    & \text{  }(\text{where  } x=\frac{\sqrt{(1-\frac{R_p}{R_*})^2-b^2}}{b\sin(\pi*T/P)}) $ \\   
+
+    $\frac{R_*}{a} = \frac{\cos(i)}{b} $ & 
+    $\sigma_{R_*/a} = \frac{R_*}{a}\sqrt{\sigma_i^2\tan^2(i)+\frac{\sigma_b^2}{b^2}}$ \\   
+    $R_* = \left(\frac{3M_*}{4\pi\rho_*}\right)^{1/3} $ &
+    $\sigma_{R_*} = \frac{R_*}{3}\sqrt{\frac{\sigma_{M_*}^2}{M_*^2}+
+      \frac{\sigma_{\rho_*}^2}{\rho_*^2}} $ \\   
+    $g_* = \frac{GM_*}{R_*^2} $ &
+    $\sigma_{g_*} = g_*\sqrt{\frac{\sigma_{M_*}^2}{M_*^2}+\frac{4\sigma_{R_*}^2}{R_*^2}} $ \\   
+    $R_p = \frac{R_p}{R_*}R_* $ &
+    $\sigma_{R_p} = R_p\sqrt{\frac{\sigma_{R_p/R_*}^2}{(R_p/R_*)^2}+ \frac{\sigma_{R_*}^2}{R_*^2}} $ \\
+    $a = \frac{R_*}{R_*/a} $ &
+    $\sigma_a = a\sqrt{\frac{\sigma_{R_*/a}^2}{(R_*/a)^2}+ \frac{\sigma_{R_*}^2}{R_*^2}} $ \\   
+    $g_p = \frac{2\pi K_*}{P}\frac{1}{\sin(i)((R_p/R_*)(R_*/a))^2} $ &
+    $ \sigma_{g_p} = g_p\sqrt{\frac{\sigma_K^2}{K^2}+\frac{\sigma_P^2}{P^2}+\frac{\sigma_{R_p/R_*}^2}{(R_p/R_*)^2}+\frac{\sigma_{R_*/a}^2}{(R_*/a)^2}+\left(\sigma_i\cot(i)\right)^2}$ \\   
+    $m_p = M_*^{2/3}\frac{K_*}{\sin(i)}\left(\frac{P}{2\pi G}\right)^{1/3} $ &
+    $\sigma_{m_p} = m_p\sqrt{\frac{4\sigma_{M_*}^2}{9M_*^2}+
+      \frac{\sigma_{K_*}}{K_*^2}+(\sigma_i\cot(i))^2+\frac{\sigma_P^2}{9P^2}}$ \\
+    $\rho_p = \frac{m_p}{4\pi R_p^3/3}  $ &
+    $\sigma_{\rho_p} = \rho_p\sqrt{\frac{\sigma_{m_p}^2}{m_p^2}+\frac{9\sigma_{R_p}^2}{R_p^2}} $ \\   
+\end{tabular}
+\caption{Equations used to derive properties of the transiting system, and the associated equations used to determine uncertainties. \label{death}}
+\end{table}
+
+For the second problem, the fit of $R_p/R_*$ together with the stellar radius estimated as described in the first section allowed for the calculation of the mass and radius of the planet,
+\begin{equation}
+\begin{array}{ll}
+R_p = \left(\frac{R_p}{R_*}\right) & \sigma_{R_p} = \sigma_{R_p/R_*}R_* \\
+\end{array}
+\end{equation}
+To determine the mass of the planet, it was sufficient to use the given parameters (none of which have uncertainties in the problem), as described by, 
+\begin{equation}
+\begin{array}{ll}
+  m_p = M_*^{2/3}\frac{K_*}{\sin(i)}\left(\frac{P}{2\pi G}\right)^{1/3} &
+  \sigma_{m_p} = m_p\sqrt{\frac{4\sigma_{M_*}^2}{9M_*^2}+\
+      \frac{\sigma_{K_*}}{K_*^2}+(\sigma_i\cot(i))^2+\frac{\sigma_P^2}{9P^2}}\\
+\end{array}
+\end{equation}
+and this number was compared with a mass estimated using the estimated planetary radius and the terrestrial planetary mass-radius relationship derived by Weiss and Marcy (2013)
+, using the equations,
+\begin{equation}
+\begin{array}{ll}
+\rho_p=2.43+3.38\left(\frac{R_p}{R_E}\right) & \text{    (for $m_p<1.5m_E$)}\\
+m_p = \rho_p\left(\frac{4\pi R_p^3}{3}\right) &
+\sigma_{m_p} = 4\pi\rho_p R_p^2\sigma_{R_p}\\
+% rp/rs = 0.046384598, err = 0.0066908645
+% rp = .893071rE, err_rp = 0.128823rE
+%rho_p = 5.45751 g/cm^3, mp = 0.707293mE, err = 0.30607596mE
+\end{array}
+\end{equation}
+
+\section*{Results}
+The fits of the raw transit curves and folded data, and their residuals, for problems 1 and 2 are shown in Figures \ref{fig1} and \ref{fig2}. For problem 2, I found it impossible to force \verb|ktransit| to both fit the proper width of the transits in both the raw data and phase-folded lightcurve, and to fit a reasonable value for the stellar density. Even when the initial estimates of $R_*$ and $\rho_*$ were instead derived based on Equation 30 from Chapter 5 of the text, the fit failed to return reasonable values (these estimates resulted in about the same fitted results, and therefore while the guesses are described in Table \ref{guesses}, the results are not described later on). The obviously flawed estimations of stellar density that resulted are detailed, mostly for the sake of satisfying curiousity, in Table \ref{prob2}, along with the other fitted values. In general, the fitted results from \verb|ktransit|  for problems 1 and 2 are described in Tables \ref{prob1} and \ref{prob2}. Additionally, the $\chi^2$ results for problem 2 are described in Figure \ref{chi}.
+
+\vspace{-20pt}
+\section*{Analysis}
+Derived values based on the \verb|ktransit| fits for problems 1 and 2 are described in Tables \ref{prob1} and \ref{prob2}. For problem 1, the results of the fits produced derived properties consistent with a hot Jupiter. Due to the flawed estimations of stellar density, some of the parameters derived for problem 2 are obviously very off, but others that do not depend on the estimation of stellar radius are reasonable. Overall, I believe it would require a lot more sensitive estimation of the parameters involved in the second system to achieve a fit consistent with a habitable planet, although what exactly is creating this difficulty is uncertain. 
+
+The derived values based on the model fitting for problem 2 are described in Table \ref{derive2}. As perhaps should be expected, given models where the only variable was $R_p/R_*$, the derived values were found to be appropriate for a habitable world. Comparing the two estimates of mass for the planet, it can be seen that the exact mass calculated based on the parameters given falls within the upper bounds of the 1-$\sigma$ error estimated for the mass calculated from the mass-radius relationship derived by Weiss and Marcy (2013).
+\begin{figure}[!ht]
+  \minipage{0.5\textwidth}
+  \includegraphics[width=3in]{assignment2_prob1_plot11.png}
+  \endminipage\hfill
+  \minipage{0.5\textwidth}
+  \includegraphics[width=3in]{assignment2_prob1_plot12.png}
+  \endminipage\hfill
+  \minipage{0.5\textwidth}
+  \includegraphics[width=3in]{assignment2_prob1_plot13.png}
+  \endminipage\hfill
+  \minipage{0.5\textwidth}
+  \includegraphics[width=3in]{assignment2_prob_fold_plot1_fold.png}
+  \endminipage\hfill
+  \caption{The fitted lightcurves of Problem 1, and fitted residuals used for detrending the data for folding and later fitting. \protect\label{fig1}
+    \protect    \emph{Top left: data 1, Right: data 2,\
+      Bottom left: data 3, Bottom right: folded data}}
+\end{figure}
+
+\begin{figure}[!ht]
+  \minipage{0.5\textwidth}
+  \includegraphics[width=3in]{assignment2_prob2_plot1.png}
+  \endminipage\hfill
+  \minipage{0.5\textwidth}
+  \includegraphics[width=3in]{assignment_fold_prob_fold_plot1.png}
+  \endminipage\hfill
+  \caption{The fitted lightcurves of Problem 2, and fitted residuals used for detrending the data for folding and later fitting.\protect\label{fig2}
+    \protect    \emph{Left: data, Right: folded data}}
+\end{figure}
+
+\begin{figure}
+\minipage{0.5\textwidth}
+\includegraphics[width=2.5in]{tbale.png}
+\endminipage
+\minipage{0.5\textwidth}
+\includegraphics[width=2.8in]{test.png}
+\endminipage\hfill
+\caption{The model fits for Problem 2.\label{chi}}
+\end{figure}
+
+\begin{table}
+  %\centering
+  \footnotesize
+  \begin{tabular}{lcccc}
+    {\bf Value} & {\bf Transit 1} & {\bf Transit 2} & {\bf Transit 3} & {\bf Phase-folded lightcurve} \\
+    \hline
+    Detrending (Normalized flux) & 
+    y = 0.0344+-0.0070x & y = -0.153+0.0125x & y=-0.115+0.00494x & y=4.467$\cdot10^{-4}$+5.221$\cdot10^{-3}$ x \\
+
+$\delta (\text{Normalized flux})$ & 1.80$\cdot10^{-2}\pm$1.75$\cdot10^{-4}$ &
+1.77$\cdot10^{-2}\pm$2$\cdot10^{-4}$&
+1.82$\cdot10^{-2}\pm$1$\cdot10^{-4}$&
+1.89$\cdot10^{-2}\pm$4$\cdot10^{-4}$ \\
+
+$b $ & 1$\cdot10^{-1}\pm$2$\cdot10^{-1}$&
+-4$\cdot10^{-4}\pm$4$\cdot10^{-4}$&
+2$\cdot10^{-1}\pm$2$\cdot10^{-1}$&
+3$\cdot10^{-1}\pm$2$\cdot10^{-1}$ \\
+
+$P (days) $ & 3.673 $\pm$1$\cdot10^{-3}$&
+3.6733 $\pm$4$\cdot10^{-4}$&
+3.673 $\pm$1$\cdot10^{-3}$&
+3.6733 $\pm$6$\cdot10^{-4}$ \\
+
+$\tau=\tau_\text{egress}=\tau_\text{ingress} (\text{days})$ & 
+3.2$\cdot10^{-2}\pm$1$\cdot10^{-3}$&
+3.2$\cdot10^{-2}\pm$2$\cdot10^{-3}$&
+3.2$\cdot10^{-2}\pm$1$\cdot10^{-3}$&
+3.3$\cdot10^{-2}\pm$3$\cdot10^{-3}$ \\
+
+$T=T_{III}-T_{II} (\text{days})$ &
+1.02$\cdot10^{-1}\pm$8$\cdot10^{-4}$ &
+1.00$\cdot10^{-1}\pm$9$\cdot10^{-4}$&
+1.02$\cdot10^{-1}\pm$6$\cdot10^{-4}$&
+1.02$\cdot10^{-1}\pm$2$\cdot10^{-3}$ \\
+
+$T_c (\text{days})$ & 
+4.9104$\pm$4$\cdot10^{-4}$&
+1.2262$\pm$5$\cdot10^{-4}$&
+2.3281$\pm$3$\cdot10^{-4}$&
+9.56$\cdot10^{-2}\pm$8$\cdot10^{-4}$ \\
+
+$R_p/R_*$ &1.341$\cdot10^{-1}\pm$7$\cdot10^{-4}$ &
+1.333$\cdot10^{-1}\pm$8$\cdot10^{-4}$ &
+1.352$\cdot10^{-1}\pm$5$\cdot10^{-4}$ &
+1.37$\cdot10^{-1}\pm$1$\cdot10^{-3}$  \\
+
+$i (^o)$ & 89.4$\pm$9$\cdot10^{-1}$&
+90.021$\pm$2$\cdot10^{-3}$&
+89$\pm$2&
+88$\pm$1\\
+
+$R_*/a$ & 1$\cdot10^{-1}\pm$2$\cdot10^{-1}$&
+1$\cdot10^{-1}\pm$1$\cdot10^{-1}$&
+1$\cdot10^{-1}\pm$2$\cdot10^{-1}$&
+1$\cdot10^{-1}\pm$1$\cdot10^{-1}$ \\
+
+$\rho_*/\rho_\sol$ & 2.0$\pm$0.2 &
+ 2.20$\pm$0.09&
+ 1.8$\pm$0.4&
+ 1.7$\pm$0.3 \\
+
+$R_*/R_\sol$ & 8.7$\cdot10^{-1}\pm$3$\cdot10^{-2}$ &
+8.3$\cdot10^{-1}\pm$1$\cdot10^{-2}$&
+9.0$\cdot10^{-1}\pm$7$\cdot10^{-2}$&
+9.0$\cdot10^{-1}\pm$5$\cdot10^{-2}$ \\
+
+$R_p/R_J$ & 1.16$\pm$4$\cdot10^{-2}$&
+1.10$\pm$2$\cdot10^{-2}$&
+1.20$\pm$9$\cdot10^{-2}$&
+1.23$\pm$7$\cdot10^{-2}$ \\
+
+$a/a_\text{E}$ & 4$\cdot10^{-2}\pm$9$\cdot10^{-2}$&
+4$\cdot10^{-2}\pm$6$\cdot10^{-2}$&
+4$\cdot10^{-2}\pm$7$\cdot10^{-2}$&
+4$\cdot10^{-2}\pm$5$\cdot10^{-2}$ \\
+
+$g_s/g_\sol$ & 1.1$\pm$0.2 &
+1.2$\pm$0.1 & 1.17$\pm$0.09 & 1.2$\pm$0.1 \\
+
+$g_p/g_\text{J}$ & 1$\pm$2&
+1$\pm$2 & 1$\pm$2 & 1$\pm$2 \\
+
+$\rho_p/\rho_\text{J}$ & 0.6$\pm$0.1&
+0.6$\pm$0.1&
+0.6$\pm$0.1&
+0.58$\pm$0.08\\
+
+$m_p/m_J$ & 1.001$\pm$4$\cdot10^{-4}$&
+1.002$\pm$1$\cdot10^{-4}$&
+1.001$\pm$6$\cdot10^{-4}$&
+1.003$\pm$7$\cdot10^{-4}$ \\
+
+  \end{tabular}
+  \caption{Fitted and derived values for Problem 1 \label{prob1}}
+\end{table}
+ 
+\begin{table}
+\footnotesize
+\centering
+\begin{tabular}{lcc}
+{\bf Value} & {\bf Data} & {\bf Phase-folded lightcurve} \\
+\hline
+Detrending (Normalized flux) & 
+ y=-2.176$\cdot10^{-7}$+6.220$\cdot10^{-9}$ x &
+ y=1.352$\cdot10^{-5}$+-3.910$\cdot10^{-6}$ x\\
+
+$\delta (\text{Normalized flux})$ &
+ 2.49$\cdot10^{-3}\pm$5$\cdot10^{-6}$& 
+ 2.18$\cdot10^{-3}\pm$3$\cdot10^{-6}$\\
+
+$\tau=\tau_\text{egress}=\tau_\text{ingress} (\text{days})$ & 
+1.250$\pm$6$\cdot10^{-3}$&
+0.060$\pm$4$\cdot10^{-3}$ \\
+
+$T=T_{III}-T_{II} (\text{days})$ & 3.768$\pm$4$\cdot10^{-3}$&
+  0.332$\pm$3$\cdot10^{-3}$\\
+
+$T_c (\text{days})$ &  8.35$\cdot10^{-1}\pm$2$\cdot10^{-3}$ &
+8.34$\cdot10^{-1}\pm$1$\cdot10^{-3}$ \\
+$R_p/R_*$ & 4.990$\cdot10^{-2}\pm$5$\cdot10^{-5}$
+& 4.67$\cdot10^{-2}\pm$3$\cdot10^{-4}$\\
+
+$\rho_*/\rho_\sol$ & 3.321$\cdot10^{-2}\pm$4$\cdot10^{-5}$& 
+3.695$\cdot10^{-2}\pm$7$\cdot10^{-5}$\\
+
+$R_*/R_\sol$ & 1.855$\pm$7$\cdot10^{-4}$& 
+1.789$\pm$1$\cdot10^{-2}$ \\
+
+$R_p/R_J$ & 0.921$\pm$1$\cdot10^{-3}$
+&0.8309$\pm$7$\cdot10^{-3}$ \\
+
+$a/a_\text{E}$ & 0.5049$\pm$2$\cdot10^{-4}$ & 
+0.489$\pm$5$\cdot10^{-3}$\\
+
+$g_p/g_\text{E}$ & 0.3194$\pm$6$\cdot10^{-4}$&
+0.377$\pm$5$\cdot10^{-3}$ \\
+
+$\rho_p/\rho_\text{E}$ & 3.91$\cdot10^{-3}\pm$2$\cdot10^{-5}$&
+5.5$\cdot10^{-3}\pm$1$\cdot10^{-4}$ \\
+
+$m_p/m_J$ & 3.134$\cdot10^{-3}\pm$5$\cdot10^{-7}$&
+3.134$\cdot10^{-3}\pm$4$\cdot10^{-7}$ \\
+
+\end{tabular}
+\caption{Fitted and derived values for Problem 2, using \protect \verb|ktransit| \label{prob2}}
+\end{table}
+
+\begin{table} 
+\begin{tabular}{ccccc}
+$\mathbf{\overline{\frac{R_p}{R_s}}}$ & $\mathbf{R_p}$ [$R_E$]& $\mathbf{\rho_p}$ [g/cm$^3$]& $\mathbf{m_p}$ [$m_E$, from $\rho_p$] & $\mathbf{m_p}$ [$m_E$,from provided parameters] \\ \hline
+0.046$\pm$0.0067 & 0.89$\pm$0.129 & 5.458 & 0.71$\pm$0.31 & 0.996\\
+\end{tabular}
+\caption{Derived values based on fits of models provided for problem 2 \label{derive2}}
+\end{table}
+
+
+%\begin{table}
+%\centering
+%\begin{tabular}{ccc}
+%{\bf{Model}} & {$\mathbf{R_p/R_*}$  &{$\mathbf{\chi^2}$} \\ \hline
+%1 & 0.0504  & 1.027$\cdot10^4\pm$6.63$\cdot10^2$ \\ 
+%2 &0.0454& 9.992$\cdot10^3\pm$3.81$\cdot10^2$ \\
+%3& 0.0484& 1.009$\cdot10^4\pm$5.47$\cdot10^2$ \\
+%4&0.0464&  1.000$\cdot10^4\pm$4.35$\cdot10^2$ \\
+%5& 0.0474&1.003$\cdot10^4\pm$4.91$\cdot10^2$ \\
+%6& 0.0494& 1.017$\cdot10^4\pm$6.05$\cdot10^2$ \\
+%7& 0.0444&  1.000$\cdot10^4\pm$3.28$\cdot10^2$ \\
+%8&0.0434 &  1.003$\cdot10^4\pm$2.77$\cdot10^2$ \\
+%9&0.0424 &  1.007$\cdot10^4\pm$2.26$\cdot10^2$ \\
+%\end{tabular}
+%\caption{Problem 2 model fits \label{2chi}}
+%\end{table}
+
+
+
+\FloatBarrier
+
+\flush
+Code used in this assignment can be found at \url{https://github.com/brbordwell/ASTR5830/}
+
+\section*{References}
+\noindent Baraffe, I. and Chabrier, G., 1996, ApJ, 461, L51 \\% Mass and Spec type
+Barclay, T. \verb|ktransit (v.3)| [software]. 2007.
+Available at: \url{https://github.com/mrtommyb/ktransit/} \\
+Demory, B.O., et al., 2009, A\&A, 505, 205 \\ %M-R low mass
+Rajpurohit, A.S., et al., 2013, A\&A, 556, A15 \\% Teff and Spec type
+Seager, S. "Exoplanet Transits and Occultations.'' \emph{Exoplanets}. Tuscson: The University of Arizona Press, 2010.
+S\'egransan, D., et al., 2003, A\&A, 397, L5 \\ %M-R low mass (empirical)
+Sing, D. K., 2010, A\&A, 510, A21 \\ %Stellar limb-darkening
+Weiss, L. and Marcy, G., 2013, ApJ, 783, L6
+
+\end{document}
