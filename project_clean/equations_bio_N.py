@@ -21,7 +21,6 @@ class cyclic_predation:
                                          'b','b_x','b_y','b_z',
                                          'c','c_x','c_y','c_z',
                                          'p'],
-                                         #'u', 'w'],
                             param_names=['D', 
                                          'ua','ub','uc', 
                                          'sa','sb','sc', 
@@ -34,7 +33,6 @@ class cyclic_predation:
                                                'b','b_x','b_y',
                                                'c','c_x','c_y',
                                                'p'],
-                                             #  'u','w'],
                                   param_names=['D', 
                                                'ua','ub','uc', 
                                                'sa','sb','sc', 
@@ -46,7 +44,7 @@ class cyclic_predation:
         if d == 3: 
             problem.add_equation("dt(a) - D*(dx(a_x)+dy(a_y)+dz(a_z)) = \
             a*(ua*(1-p)-sa*c) + \
-            N**-0.5 * (a*(ua*(1-p)+sa*c))**0.5 * Ea")
+            N**-0.5 * (((a*(ua*(1-p)+sa*c))**2)**0.5)**0.5 * Ea")
         else:
             problem.add_equation("dt(a) - D*(dx(a_x)+dy(a_y)) = \
             a*(ua*(1-p)-sa*c) + \
@@ -68,7 +66,7 @@ class cyclic_predation:
         if d == 3: 
             problem.add_equation("dt(c) - D*(dx(c_x)+dy(c_y)+dz(c_z)) = \
             c*(uc*(1-p)-sc*b) + \
-            N**-0.5 * (c*(uc*(1-p)+sc*b))**0.5 * Ec")
+            N**-0.5 * (((c*(uc*(1-p)+sc*b))**2)**0.5)**0.5 * Ec")
         else:
             problem.add_equation("dt(c) - D*(dx(c_x)+dy(c_y)) = \
             c*(uc*(1-p)-sc*b) + \
@@ -77,7 +75,7 @@ class cyclic_predation:
 
         # Keeping overall species density within capacity
         problem.add_equation("p - a - b - c = 0")
-        #problem.add_equation("Integrate(p) - 1 = 0")
+
 
         # Getting those spatial derivatives done
         problem.add_equation("dx(a) - a_x = 0")
@@ -92,8 +90,6 @@ class cyclic_predation:
         problem.add_equation("dy(c) - c_y = 0")
         if d == 3: problem.add_equation("dz(c) - c_z = 0")
 
-        #problem.add_equation("u = D/Dx")
-        #problem.add_equation("w = D/Dy")
 
         logger.info("Imposing periodic boundary conditions.")
 

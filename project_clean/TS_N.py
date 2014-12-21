@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 from dedalus2.public import *
 from dedalus2.tools  import post
 from dedalus2.extras import flow_tools
-#from dedalus2.extras.checkpointing import Checkpoint
+
 
 initial_time = time.time()
 
@@ -22,11 +22,11 @@ logger.info("Starting Dedalus script {:s}".format(sys.argv[0]))
 # save data in directory named after script
 data_dir = sys.argv[0].split('.py')[0]+'/'
 
-k_diff = 3e-6#float(sys.argv[1])
-r_birth = np.zeros(3)+1.#float(sys.argv[2]) # For now, just replicating figure 17
-r_death = np.zeros(3)+1.#float(sys.argv[3])
-L = 100#float(sys.argv[4])
-d = 2.#float(sys.argv[5])
+k_diff = float(sys.argv[1])
+r_birth = float(sys.argv[2]) 
+r_death = float(sys.argv[3])
+L = float(sys.argv[4])
+d = float(sys.argv[5])
 noise = lambda: np.random.normal()
 
 nx = np.int(L*3/2)
@@ -34,8 +34,8 @@ ny = np.int(L*3/2)
 # nz = np.int(L*3/2)
 
 # Set domain
-Lx = 1#nx
-Ly = 1#ny
+Lx = 1
+Ly = 1
 #Lz = 1
 
 x_basis = Fourier(nx,   interval=[0., Lx], dealias=2/3)
@@ -68,13 +68,14 @@ y = domain.grid(1)
 a = solver.state['a']
 b = solver.state['b']
 c = solver.state['c']
-#u = solver.state['u']
-#w = solver.state['w']
 
 
 solver.evaluator.vars['Lx'] = Lx
 solver.evaluator.vars['Ly'] = Ly
 #solver.evaluator.vars['Lz'] = Lz
+
+
+
 
 # Islands
 def randrange(a,b,n):
@@ -153,15 +154,11 @@ else:
   c['g'] = rand_disp(one=2,block=a['g']+b['g'])
 
 
-#u['g'] = k_diff/(L/nx)
-#w['g'] = k_diff/(L/ny)
-
 
 # integrate parameters
 bit=1
 max_dt = k_diff/(L/nx)**2*bit
 cfl_cadence = 1
-#cfl = flow_tools.CFL_conv_2D(solver, max_dt, cfl_cadence=cfl_cadence)
 
 report_cadence = 1
 output_time_cadence = max_dt*10
@@ -178,7 +175,6 @@ analysis_slice.add_task("dx(a)", name="a_x")
 analysis_slice.add_task("b", name="b")
 analysis_slice.add_task("c", name="c")
 analysis_slice.add_task("p", name="p")
-#analysis_slice.add_task("(dx(w) - dz(u))**2", name="enstrophy")
 
 
 do_checkpointing=False
@@ -196,9 +192,8 @@ while solver.ok:
     
     if solver.iteration % cfl_cadence == 0 and solver.iteration>=2*cfl_cadence:
         domain.distributor.comm_world.Barrier()
-        solver.dt = k_diff/(L/nx)**2*bit#cfl.compute_dt(cfl_safety_factor)
+        solver.dt = k_diff/(L/nx)**2*bit
 
-        #pdb.set_trace()
     # update lists
     if solver.iteration % report_cadence == 0:
         log_string = 'Iteration: {:5d}, Time: {:8.3e}, dt: {:8.3e}, a_avg: {:8.3e}'.format(solver.iteration, solver.sim_time, solver.dt,np.mean(a['g']))
